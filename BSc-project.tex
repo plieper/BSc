@@ -1,0 +1,218 @@
+\documentclass[usenames,dvipsnames]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{beaver}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{mathtools}
+\usepackage{verbatim}
+\usepackage[absolute,overlay]{textpos}
+
+\title[BSc project]{BSc project: detection and visualization of bird movement recorded by weather radar}
+\author[L. Verlinden, Z. Koma, W. Bouten]{Liesbeth Verlinden, Zs\'ofi Koma, dr. ir. prof. Willem Bouten}
+\date{\today}
+
+\newenvironment{myblock}[3]{%
+	\setbeamercolor{block body}{#2}
+	\setbeamercolor{block title}{#3}
+\begin{block}{#1}}{\end{block}}
+
+
+\begin{document}
+
+%title page
+\begin{frame}
+	\titlepage
+\end{frame}
+
+
+%toc
+\begin{frame}{Table of content}
+	\begin{enumerate}
+		\item Radar basics
+		\begin{itemize}
+			\item [-] storage of radar data
+		\end{itemize}
+		\item Bird detection by radar
+		\item 3D point cloud
+		\item Aim of the project
+	\end{enumerate}
+\end{frame}
+
+
+%radar basics: principle
+\begin{frame}{Radar basics: the principle}
+\begin{center}
+	\includegraphics[height=1cm]{./pics/radar-pulse-1.png}
+	\hspace{1cm}
+	\includegraphics[height=1cm]{./pics/radar-pulse-4.png}
+	\hspace{1cm}
+	\includegraphics[height=1cm]{./pics/radar-pulse-6.png}
+\end{center}
+
+\begin{itemize}
+	\item Electromagnetic pulse %(NL: C-band) %wavelength: 5.3cm, freq range 4-8 GHz
+	\item Echoes: 
+	\begin{itemize}
+		\item[-] returned power/reflectivity
+		\item[-] radial/Doppler velocity, calculated from the shift in wavelength
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+%radar basics: the beam
+\begin{frame}{Radar basics: the beam}
+\begin{itemize}
+	\item Transmitter - receiver
+	\item Range gate/bin
+	\begin{center}
+		\includegraphics[height=1.5cm]{./pics/range-gate}
+		\vspace{0.5cm}
+		\includegraphics[height=2.5cm]{./pics/range-gate2}
+	\end{center}
+	\item N$\,^{\circ}$ of range gates depends on wavelength
+\end{itemize}	
+\end{frame}
+
+
+%radar basics: range gate/bin
+\begin{frame}{Radar basics: range gate/bin}
+Each range gate has:
+\begin{itemize}
+	\item certain amount of returned power/reflectivity
+	\item radial/Doppler velocity
+\end{itemize}
+\end{frame}
+
+
+%radar basics: scans and volumes
+\begin{frame}{Radar basics: scans and volumes}
+\centering
+\begin{tikzpicture}
+\node (ela1) [] {\includegraphics[height=2.5cm]{./pics/ela1}};
+\node (ela2) [right=0.5cm of ela1]  {\includegraphics[height=2.5cm]{./pics/ela2}};
+
+\draw[thick, dashed] (-1.6,0) -- (1.5, 0.6);
+\draw[thick, dashed] (4,0.1) -- (6.7, 1);
+
+\draw[->, thick, blue] (1.2,-1) arc (0:27:3cm);
+\draw[->, thick, blue] (6.7,-1) arc (0:35:3cm);
+
+\node[blue, below=0.1cm of ela1] {elevation angle 0.5$\,^{\circ}$};
+\node[blue, below=0.1cm of ela2] {elevation angle 1.1$\,^{\circ}$};
+
+\draw[red, ->, thick] (-0.6,1)  arc (0:300:1cm and 0.4cm);
+\draw[red, ->, thick] (5,1)  arc (0:300:1cm and 0.4cm);
+ 
+\node[below right = 1cm and -2.5cm of ela1] (3rad) {\includegraphics[height=3cm]{./pics/3d-radar.jpg}};
+\end{tikzpicture}
+\end{frame}
+
+
+
+%radar basics: the beam across distance
+\begin{frame}{Radar basics: the beam across distance}
+	\begin{center}	
+		\includegraphics[height=4.4cm]{./pics/beam-width}
+		\hspace{.25cm}
+		\includegraphics[height=4.4cm]{./pics/beam-height}
+	\end{center}
+\end{frame}
+
+
+
+
+%radar basics: doppler spectrum
+\begin{frame}{Radar basics: Doppler spectrum}
+	Doppler spectrum for one range gate:
+	\vspace{0.25cm}
+	\begin{center}
+		\includegraphics[height=3cm]{./pics/ground-clutter1}
+	\end{center}	
+	
+\end{frame}
+
+%radar basics: clutter filter
+\begin{frame}{Radar basics: radar processor clutter filtering}
+	\begin{center}
+		\includegraphics[height=3cm]{./pics/ground-clutter2}
+	\end{center}
+
+	\begin{itemize}				
+		\item Doppler filter, during data collection
+		\item Removes the peak in returned power around radial velocity = 0 m/s via a sharp high-pass filter and reconstructs the data
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Radar basics: the PPI}
+\centering
+\begin{tikzpicture}
+\node[inner sep=0pt]  {\includegraphics[height=5cm]{./pics/ppi}};
+\node at (5, 0.2) {\includegraphics[height=3cm]{./pics/fragm-ppi}};
+
+\draw[thick] (-1,-0.5) -- (0,-0.5) -- (0,0.5) -- (-1,0.5) -- (-1,-0.5);	
+\draw[thick] (0,0.5) -- (3.25,1.69);
+\draw[thick] (0,-0.5) -- (3.25,-1.29);
+
+\draw[thick] (5.85,-0.5) circle (0.25cm);
+\draw[thick, ->] (6,-2) --(5.85,-0.75);
+\node at (6, -2.3) {range gate};
+\end{tikzpicture}
+\end{frame}
+
+
+%data storage
+\begin{frame}{Storage radar data: hdf5}
+See example
+\end{frame}
+
+
+%bird detection: meteo vs non-meteo scatter
+\begin{frame}{Bird detection: meteo vs non-meteo scatter}
+\begin{itemize}
+	\item 1940$^s$, ``angles''
+\end{itemize}
+\begin{center}
+		\includegraphics[height=7cm]{./pics/case-studies.jpg}
+\end{center}
+\end{frame}
+
+
+%bird detection: vol2bird
+\begin{frame}{Bird detection: vol2bird}
+\begin{itemize}
+	\item Detection algorithm \textit{vol2bird} 
+	\begin{itemize}
+		\item[-] reflectivity and variability in radial velocity
+		\item[-] averages per 200m and between 5-25km $\Rightarrow$ 2D image
+	\end{itemize}
+\end{itemize}
+		\begin{center}
+	\begin{tikzpicture}
+	\node[inner sep=0pt] {\includegraphics[height=5cm]{./pics/output-layer}};
+	\node at (5, 0.2) {\includegraphics[height=3cm]{./pics/vpb-part}};
+	
+	\draw[thick] (-1,-0.5) -- (0,-0.5) -- (0,0.5) -- (-1,0.5) -- (-1,-0.5);	
+	\draw[thick, ->] (0,0) --(5,1.3);			
+	\draw[thick] (5.25,1.35) circle (0.25cm);
+	\end{tikzpicture}
+\end{center}
+\end{frame}
+	
+	
+%3D point cloud	
+\begin{frame}{3D point cloud}
+\end{frame}	
+	
+
+%aim of the project
+\begin{frame}{Aim of the project}
+The aim of the project is to make the separation between biological (bird) and rain echoes using machine learning techniques. The filtered data should then be plotted in a 3D point cloud, coloured according to a specified scale.
+\end{frame}	
+	
+\end{document}
